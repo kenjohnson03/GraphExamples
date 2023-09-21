@@ -26,11 +26,41 @@ AzureAd:TenantId
 - Guid from Azure App Registration
 - https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal#get-values-for-signing-in
 
+HoursToQuery
+- Number of hours to query for new devices. Default is -2 which will query for devices created in the last 2 hours. This is used to prevent the function from querying for all devices in the tenant.
+
+Portal advanced edit
 ```
-TargetCloud: AzurePublicCloud
-AzureApp:ClientSecret: {Secret Here}
-AzureAd:ClientId: {Guid Here}
-AzureAd:TenantId: {Guid Here}
+{
+	"name": "AUUpdates",
+	"value": "DeviceName=AUId;DeviceName=AUId;",
+	"slotSetting": false
+},
+{
+	"name": "TargetCloud",
+	"value": "AzurePublicCloud",
+	"slotSetting": false
+},
+{
+	"name": "AzureApp:ClientSecret",
+	"value": "{Secret Here}",
+	"slotSetting": false
+},
+{
+	"name": "AzureAd:ClientId",
+	"value": "{Guid Here}",
+	"slotSetting": false
+},
+{
+	"name": "AzureAd:TenantId",
+	"value": "{Guid Here}",
+	"slotSetting": false
+},
+{
+	"name": "HoursToQuery",
+	"value": "-2",
+	"slotSetting": false
+}
 ```
 
 ## Service Principal Permissions

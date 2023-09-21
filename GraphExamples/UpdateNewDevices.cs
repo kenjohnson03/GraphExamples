@@ -33,13 +33,32 @@ namespace GraphExamples
 
             _logger.LogInformation($"C# Timer trigger function {fullMethodName} executed at: {DateTime.Now}");
             var AUUpdates = Environment.GetEnvironmentVariable("AUUpdates", EnvironmentVariableTarget.Process);
+            var hoursToQuery = Environment.GetEnvironmentVariable("HoursToQuery", EnvironmentVariableTarget.Process);
+            int time = 0;
+            try
+            {
+                time = Convert.ToInt32((string)hoursToQuery);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning($"{fullMethodName} Error converting HoursToQuery to int: \n{ex.Message}");
+            }
+            
+            if(time == 0)
+            {
+                time = -2;
+            }
+            else
+            {
+                time = time * -1;
+            }
 
             if (String.IsNullOrEmpty(AUUpdates))
             {
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine($"{fullMethodName} Error: Missing required environment variables. Please check the following environment variables are set:");
                 sb.Append(String.IsNullOrEmpty(AUUpdates) ? "AUUpdates\n" : "");
-                
+
                 _logger.LogError(sb.ToString());
                 return;
             }
@@ -47,7 +66,7 @@ namespace GraphExamples
             List<GraphExamples.Models.Graph.ManagedDevice> devices = null;
             try
             {
-                devices = await GetNewDeviceManagementObjectsAsync((DateTime.UtcNow.AddHours(-2)));
+                devices = await GetNewDeviceManagementObjectsAsync((DateTime.UtcNow.AddHours(time)));
             }            
             catch (Exception ex)
             {
