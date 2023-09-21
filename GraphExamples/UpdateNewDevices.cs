@@ -11,6 +11,8 @@ using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
+using System.Xml.Linq;
 
 namespace GraphExamples
 {
@@ -20,7 +22,7 @@ namespace GraphExamples
         private static string _guidRegex = "^([0-9A-Fa-f]{8}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{4}[-]?[0-9A-Fa-f]{12})$";
 
         [FunctionName("UpdateNewDevices")]
-        public async Task Run([TimerTrigger("0 5 * * * *")] TimerInfo myTimer, ILogger log)
+        public async Task Run([TimerTrigger("0 5 * * * *")] TimerInfo myTimer, ILogger log, IConfiguration configuration)
         {
             MethodBase method = System.Reflection.MethodBase.GetCurrentMethod();
             string methodName = method.Name;
@@ -30,23 +32,59 @@ namespace GraphExamples
             _logger = log;
 
             _logger.LogInformation($"C# Timer trigger function {fullMethodName} executed at: {DateTime.Now}");
+            var AUUpdates = Environment.GetEnvironmentVariable("AUUpdates", EnvironmentVariableTarget.Process);
 
-            List<GraphExamples.Models.Graph.ManagedDevice> devices = await GetNewDeviceManagementObjectsAsync((DateTime.UtcNow.AddHours(-2)));
+            if (String.IsNullOrEmpty(AUUpdates))
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"{fullMethodName} Error: Missing required environment variables. Please check the following environment variables are set:");
+                sb.Append(String.IsNullOrEmpty(AUUpdates) ? "AUUpdates\n" : "");
+                
+                _logger.LogError(sb.ToString());
+                return;
+            }
+
+            List<GraphExamples.Models.Graph.ManagedDevice> devices = null;
+            try
+            {
+                devices = await GetNewDeviceManagementObjectsAsync((DateTime.UtcNow.AddHours(-2)));
+            }            
+            catch (Exception ex)
+            {
+                _logger.LogError($"{fullMethodName} Error retrieving devices: \n{ex.Message}");
+                return;
+            }
 
             if (devices == null)
             {
                 _logger.LogError($"{fullMethodName} Error: Failed to get new devices, exiting");
                 return;
             }
-            foreach (GraphExamples.Models.Graph.ManagedDevice device in devices)
+
+            string[] entries = AUUpdates.Split(';');
+            foreach (string entry in entries)
             {
-                if(device.deviceName.StartsWith("AVD-1"))
+                string[] entryParts = entry.Split('=');
+                if (entryParts.Length != 2)
                 {
-                    await AddDeviceToAzureAdministrativeUnit(device.azureADDeviceId, "{SomeGuid to add}");
+                    _logger.LogError($"{fullMethodName} Error: Invalid AUUpdates entry: {entry}");
+                    continue;
                 }
-                else if(device.deviceName.StartsWith("AVD-2"))
+
+                string deviceName = entryParts[0];
+                string auId = entryParts[1];
+                List<GraphExamples.Models.Graph.ManagedDevice> filteredDevices = devices.FindAll(x => x.deviceName.Contains(deviceName));
+                foreach(GraphExamples.Models.Graph.ManagedDevice device in filteredDevices)
                 {
-                    await AddDeviceToAzureAdministrativeUnit(device.azureADDeviceId, "{SomeGuid to add}");
+                    try
+                    {
+                        await AddDeviceToAzureAdministrativeUnit(device.azureADDeviceId, auId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"{fullMethodName} Error adding Device Id {device.azureADDeviceId} to Administrative Unit: {auId}\nError : {ex.Message}");
+                    }
+                    
                 }
             }
         }
