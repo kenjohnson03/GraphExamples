@@ -60,6 +60,11 @@ Portal advanced edit
 	"name": "HoursToQuery",
 	"value": "-2",
 	"slotSetting": false
+},
+{
+	"name": "TriggerTime",
+	"value": "0 0 10 12-11 * *",
+	"slotSetting": false
 }
 ```
 
