@@ -145,14 +145,14 @@ namespace GraphExamples
 
             try
             {
-                string uri = $"{tokenUri}/v1.0/deviceManagement/managedDevices?$filter=enrolledDateTime ge {dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}&$select=id,name,manufacturer,model,serialNumber,azureADDeviceId";
+                string uri = $"{tokenUri}/v1.0/deviceManagement/managedDevices?$filter=enrolledDateTime ge {dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")}&$select=id,deviceName,manufacturer,model,serialNumber,azureADDeviceId";
                 while (!string.IsNullOrEmpty(uri))
                 {
                     var graphResponse = await httpClient.GetAsync(uri);
                     graphResponse.EnsureSuccessStatusCode();
                     var graphContent = await graphResponse.Content.ReadAsStringAsync();
                     GraphExamples.Models.Graph.ManagedDevices deviceResponse = JsonConvert.DeserializeObject<GraphExamples.Models.Graph.ManagedDevices>(graphContent);
-
+                    
                     devices.AddRange(deviceResponse.value);
                     uri = deviceResponse.odataNextLink;
                 }

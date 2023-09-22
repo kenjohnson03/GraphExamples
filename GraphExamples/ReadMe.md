@@ -7,7 +7,7 @@ This function app
 AUUpdates - where the device names are mapped to the AU Ids. DeviceName is used to match the device name in Intune. This uses a contains method in the background so partial matching works where naming standards are used. AUId is the Id of the Administrative Unit in Intune. Multiple mappings can be added by separating them with a semicolon. Example: DeviceName=AUId;DeviceName=AUId;
 - Format: DeviceName=AUId;DeviceName=AUId;
 
-TargetCloud
+AzureEnvironment
 - AzurePublicCloud
 - AzureUSGovernment
 - AzureUSDoD
@@ -37,7 +37,7 @@ Portal advanced edit
 	"slotSetting": false
 },
 {
-	"name": "TargetCloud",
+	"name": "AzureEnvironment",
 	"value": "AzurePublicCloud",
 	"slotSetting": false
 },
