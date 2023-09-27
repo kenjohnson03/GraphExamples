@@ -1,5 +1,5 @@
 ﻿# Overview - UpdateNewDevices
-This function app
+This function app adds devices recently added to Intune to Administrative Units.
 
 # Install - UpdateNewDevices
 
